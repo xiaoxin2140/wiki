@@ -218,6 +218,6 @@ Bataroc 键入："请帮我安装 Witness Node"。
 
 作者：Bataroc J-67（微信rocamazinggoal，欢迎交流~~）
 
-编辑：	
+编辑：	如行 J-12
 
-审校：
+审校： Koant J-0
