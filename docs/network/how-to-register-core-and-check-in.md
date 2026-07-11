@@ -19,12 +19,14 @@ Reviewer | -
 
 高级 KYC 是 Jouleverse 可信身份体系的一部分，所有核心贡献者均须完成。
 
-KYC 登记表：[点此填写空投登记表](https://docs.qq.com/form/page/DTEp2cEdsa0lTelB0)
+👉 **[点此打开 KYC 登记表单](kyc-form.html)** — 填写后自动生成汇总信息，复制或直接通过邮件提交给审查员。
+
+或者，你也可以直接填写[空投登记表（腾讯文档版）](https://docs.qq.com/form/page/DTEp2cEdsa0lTelB0)。
 
 填写时请准备好：
 - 你的节点信息（enode、IP 等）
 - 签块地址（0x...）
-- 个人身份信息（按表单要求填写）
+- 个人身份信息（身份证、手机号等）
 
 待审核通过后，你将进入下一步。
 
