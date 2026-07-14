@@ -125,6 +125,13 @@
 
  <form id="kycForm">
 
+ <!-- 隐私提示 -->
+ <div class="card" style="background:#fff8e1;border:1px solid #f9a825;">
+ <p style="font-size:13px;color:#795548;line-height:1.6;">
+ 🔒 <b>隐私说明：</b>本表单收集的身份证号、手机号等敏感信息仅用于 KYC 实名认证，由审查员在核验后归档保存，不会公开或用于其他用途。提交时请确认接收方为 Jouleverse Core 指定的审查员。
+ </p>
+ </div>
+
  <!-- 类型选择 -->
  <div class="card">
  <div class="card-title">申请类型</div>
@@ -197,8 +204,8 @@
  </div>
 
  <div class="field">
- <label>GitHub 个人主页 <span class="optional">（选填）</span></label>
- <input type="url" id="github" placeholder="https://github.com/你的账号">
+ <label>GitHub 个人主页 <span class="optional">（选填，请输入完整 URL 或用户名）</span></label>
+ <input type="text" id="github" placeholder="https://github.com/你的账号 或 用户名">
  </div>
  </div>
 
@@ -285,6 +292,17 @@
  </div>
  </div>
 
+ <!-- 审查员选择 -->
+ <div class="card">
+ <div class="card-title">选择审查员</div>
+ <div class="field">
+ <select id="reviewerSelect">
+ <option value="evan@blockcoach.com|教链（J25）">教链（J25）- evan@blockcoach.com</option>
+ </select>
+ <div class="hint">如果列表中没有你的审查员，请先联系 Core 管理员确认</div>
+ </div>
+ </div>
+
  <!-- 提交 -->
  <button type="button" class="submit-btn" onclick="preview()">提交审查</button>
  <p style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">
@@ -360,6 +378,17 @@ function collectData() {
  return d;
 }
 
+// 辅助校验
+function validateIdNumber(val) {
+ return /^\d{17}[\dXx]$/.test(val);
+}
+function validateMobile(val) {
+ return /^1\d{10}$/.test(val);
+}
+function validateAddress(val) {
+ return /^0x[a-fA-F0-9]{40}$/.test(val);
+}
+
 // 验证必填
 function validate(d) {
  // 验证必填文本字段
@@ -371,6 +400,19 @@ function validate(d) {
  alert(`请填写「${labels[key]||key}」`);
  return false;
  }
+ }
+ // 格式校验
+ if (!validateIdNumber(d.idNumber)) {
+ alert('身份证号格式有误，应为 18 位（末位可为 X）');
+ return false;
+ }
+ if (!validateMobile(d.mobile)) {
+ alert('手机号格式有误，应为 11 位数字');
+ return false;
+ }
+ if (!validateAddress(d.wallet)) {
+ alert('链地址格式有误，应为 0x 开头的 42 位十六进制地址');
+ return false;
  }
  // 验证至少选择一个角色
  const checkedRoles = document.querySelectorAll('input[name="role"]:checked');
@@ -390,8 +432,24 @@ function validate(d) {
  return false;
  }
  }
+ if (e.legalMobile && !validateMobile(e.legalMobile)) {
+ alert('法人联系电话格式有误');
+ return false;
+ }
+ if (e.itMobile && !validateMobile(e.itMobile)) {
+ alert('IT负责人联系电话格式有误');
+ return false;
+ }
  }
  return true;
+}
+
+// 获取当前选择审查员
+function getReviewer() {
+ const sel = document.getElementById('reviewerSelect');
+ const val = sel.value;
+ const parts = val.split('|');
+ return { email: parts[0], name: parts[1] || '' };
 }
 
 // 格式化摘要
@@ -490,13 +548,14 @@ function buildEmailBody(d) {
 // 复制到剪贴板
 function copyToClipboard() {
  const d = collectData();
+ const reviewer = getReviewer();
  const body = buildEmailBody(d);
  const subject = d.nickname + ' 的高级KYC申请资料';
  const nl = '\n';
- const fullText = '收件人：evan@blockcoach.com' + nl + '主题：' + subject + nl + nl + body;
+ const fullText = '收件人：' + reviewer.email + nl + '审查员：' + reviewer.name + nl + '主题：' + subject + nl + nl + body;
 
  navigator.clipboard.writeText(fullText).then(function() {
- alert('✅ 已复制到剪贴板！\n\n请前往邮箱，新建邮件→粘贴收件人、主题和正文→发送。');
+ alert('✅ 已复制到剪贴板！\n\n请前往邮箱，新建邮件→粘贴收件人、主题和正文→发送。\n\n收件人：' + reviewer.email);
  }).catch(function() {
  var ta = document.createElement('textarea');
  ta.value = fullText;
@@ -511,12 +570,17 @@ function copyToClipboard() {
 // 发送邮件
 function sendEmail() {
  const d = collectData();
+ const reviewer = getReviewer();
  const body = buildEmailBody(d);
  const subject = encodeURIComponent(`${d.nickname} 的高级KYC申请资料`);
  const bodyEncoded = encodeURIComponent(body);
- const mailto = `mailto:evan@blockcoach.com?subject=${subject}&body=${bodyEncoded}`;
+ const mailto = `mailto:${reviewer.email}?subject=${subject}&body=${bodyEncoded}`;
  window.location.href = mailto;
  closeModal();
+ // mailto fallback 提示
+ setTimeout(function() {
+ alert('✉️ 如果邮件客户端没有自动打开，请手动复制以下信息发送：\n\n收件人：' + reviewer.email + '\n主题：' + d.nickname + ' 的高级KYC申请资料');
+ }, 1000);
 }
 </script>
 
